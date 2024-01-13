@@ -98,5 +98,32 @@ class Job {
 
     return job;
   }
+
+  /** Update job data with `data`.
+   *
+   * This is a "partial update" --- it's fine if data doesn't contain all the
+   * fields; this only changes provided ones.
+   *
+   * Data can include: { title, salary, equity }
+   *
+   * Returns { id, title, salary, equity, company_handle }
+   *
+   * Throws NotFoundError if not found.
+   */
+
+  static async update(id, data) {
+    const { setCols, values } = sqlForPartialUpdate(data, {});
+    const idVarIdx = "$" + (values.length + 1);
+
+    const querySql = `UPDATE jobs SET ${setCols} WHERE = ${idVarIdx} RETURNING id, title, salary, equity, company_handle`;
+
+    const res = await db.query(querySql, [...values, id]);
+    const job = res.rows[0];
+
+    if (!job) throw new NotFoundError(`No such job: ${id}`);
+
+    return job;
+  }
+
 }
 module.exports = Job;
