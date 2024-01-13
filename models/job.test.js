@@ -8,6 +8,7 @@ const {
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
+  testJobIds
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -111,6 +112,8 @@ describe("findAll", function () {
 /************************************** findFilteredJobs */
 // TODO:
 
+
+
 /************************************** get */
 
 // CREATE TABLE jobs (
@@ -153,11 +156,56 @@ describe("get", function () {
 
 /************************************** update */
 
+describe("update", function(){
+  const updateData = {
+    title: "Updatedjobtitle",
+    salary: 24320,
+    equity: "0.5",
+  };
 
+  test("works", async function(){
+    const newJob = await Job.update("j2", updateData);
+    expect(newJob).toEqual({
+      id: testJobIds[0],
+      company_handle:"c1",
+      ...updateData
+    });
 
+    const result = await db.query(`
+      SELECT id, title, salary, equity, company_handle
+      FROM jobs
+      WHERE id = $1
+    `, [testJobIds[0]]);
 
+    expect(result.rows).toEqual([
+        {
+          id: testJobIds[0],
+          company_handle:"c1",
+          ...updateData
+        }
+    ]);
+  });
 
+  test("job doesnt exist", async function(){
+    try{
+      const newJob = await Job.update(0, updateData);
+      throw new Error("fail test shouldnt get there");
+    }
+    catch(err){
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
 
+  test("bad request no data", async function(){
+    try{
+      const newJob = await Job.update(0, {});
+      throw new Error("fail test shouldnt get there");
+    }
+    catch(err){
+      expect(err instanceof BadRequestError).toBeTruthy();
+    }
+  });
+});
 
 
 /************************************** remove */
