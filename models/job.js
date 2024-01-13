@@ -115,14 +115,32 @@ class Job {
     const { setCols, values } = sqlForPartialUpdate(data, {});
     const idVarIdx = "$" + (values.length + 1);
 
-    const querySql = `UPDATE jobs SET ${setCols} WHERE = ${idVarIdx} RETURNING id, title, salary, equity, company_handle`;
+    const querySql = `UPDATE jobs SET ${setCols} WHERE id = ${idVarIdx}
+    RETURNING id, title, salary, equity, company_handle`;
 
+    // console.log("querySql", querySql);
     const res = await db.query(querySql, [...values, id]);
     const job = res.rows[0];
 
     if (!job) throw new NotFoundError(`No such job: ${id}`);
 
     return job;
+  }
+
+  /** Delete given job from database; returns undefined.
+   *
+   * Throws NotFoundError if job not found.
+   **/
+
+  static async remove(id) {
+    const result = await db.query(`
+        DELETE
+        FROM jobs
+        WHERE id = $1
+        RETURNING id`, [id]);
+    const job = result.rows[0];
+
+    if (!job) throw new NotFoundError(`No job: ${id}`);
   }
 
 }

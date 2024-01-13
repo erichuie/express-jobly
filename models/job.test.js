@@ -164,6 +164,7 @@ describe("update", function () {
   };
 
   test("works", async function () {
+    console.log(testJobIds);
     const newJob = await Job.update(testJobIds[0], updateData);
     expect(newJob).toEqual({
       id: testJobIds[0],
